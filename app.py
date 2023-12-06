@@ -1,67 +1,92 @@
-# Importando base das funcionalidades selenium
-import sys  # Biblioteca para recursos de identificacao de sistema operacional
-import os  # Biblioteca para uso de recursos do sistema
-import time  # Biblioteca para uso de sleep aguardar periodos de pausa
-import logging  # Usado para desativar o log do webdriver-manager
-# import shutil  # Usado para mover arquivos entre diretorios
-import unicodedata  # Usado para remover acentuacao de strings
-from logging.handlers import RotatingFileHandler  # Biblioteca utilizada para rotatividade de arquivos de log
-from locale import setlocale, LC_ALL
-from selenium import webdriver  # Importando WebDriver do Selenium
-from selenium.webdriver.chrome.service import Service as ChromeService  # Importando o servico webdriver do selenium e definando o nome para o servico no chrome
-from selenium.webdriver.firefox.service import Service as FirefoxService  # Importando o servico webdriver do selenium e definando o nome para o servico no firefox
-from selenium.webdriver.common.by import By  # Recurso do Selenium Find POR
-from selenium.webdriver.common.keys import Keys  # Recurso do Selenium uso de padroes de teclas ex Enter
-from selenium.webdriver.common.action_chains import ActionChains  # Recursos do Selenium para acoes do mouse
-from selenium.webdriver.support import expected_conditions as EC  # Recurso do Selenium como EC
-from selenium.webdriver.support.ui import WebDriverWait  # Recurso do Selenium Usar para aguardar elementos aparecerem
-import urllib3  # Biblioteca para desativar verificacao de ssl nao verificado googleapis
+import telebot
+import time
+import dados
+import webbrowser
+from urllib.parse import quote
+from selenium import webdriver
+from selenium.webdriver.chrome.service import Service as ChromeService
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
 
-site1 = "https://loterias.caixa.gov.br/Paginas/Mega-Sena.aspx"
+# Constantes
+site_url = "https://loterias.caixa.gov.br/Paginas/Mega-Sena.aspx"
+bot = telebot.TeleBot(dados.chave_api)
 
-# Criar funcao para iniciar o navegador.
-def inicializa_navegador(self):
-    urllib3.disable_warnings()  # Desativando aviso de ssl nao verificado, pois, sao sistemas internos.
-    os.environ['WDM_SSL_VERIFY'] = '0'  # Definindo para zero devido a erro de SSL auto assinado, removendo a verificacao
-    logging.getLogger('WDM').setLevel(logging.NOTSET)  # Desabilitando o log do wdm webdriver-manager (Pode ser descomentado a qualquer momento)
-    os.environ['WDM_LOG'] = '0'  # Desabilitando o log do wdm webdriver-manager (Pode ser descomentado a qualquer momento)
-    os.environ['WDM_PRINT_FIRST_LINE'] = 'False'  # Desabilitando a insercao de linhas em branco no log do webdriver-manager
+# Funcoes
+class Navegador:
+    def __init__(self):
+        options = webdriver.ChromeOptions()
+        # options.add_argument('--headless=new')
+        prefs = {"download.default_directory": r"C:\Users\Nexxera\Downloads"}
+        options.add_experimental_option("excludeSwitches", ["enable-logging"])
+        options.add_experimental_option("prefs", prefs)
+        service = ChromeService(log_path='chromedriver.log')
+        self.driver = webdriver.Chrome(options=options, service=service)
+
+    def inicializar(self):
+        self.driver.get(site_url)
+        self.driver.maximize_window()
+        time.sleep(2)
+
+    def buscar_numeros_sorteados(self):
+        # self.aceitar_cookies()
+
+        try:
+            WebDriverWait(self.driver, 10).until(EC.element_to_be_clickable((By.XPATH, "(//button[normalize-space()='Rejeitar'])[1]")))
+            self.driver.find_element(By.XPATH, "(//button[normalize-space()='Rejeitar'])[1]").click()
+            time.sleep(1)
+            self.driver.find_element(By.XPATH, "//h2[1]//span[1]").location_once_scrolled_into_view
+            time.sleep(1)
+            resultado = self.driver.find_element(By.XPATH, "(//div[@class='resultado-loteria'])[1]").text
+            print('')
+            print(resultado)
+            print('')
+            premiacao = self.driver.find_element(By.XPATH, "(//div[@class='related-box gray-text no-margin'])[1]").text
+            print(premiacao)
+            print('')
+            time.sleep(10)
+            return resultado
+        
+        # Modifique o XPath abaixo para corresponder ao local onde os números sorteados estão na página
+        # xpath_numeros_sorteados = "//div[@class='classe_do_elemento']//span[contains(@class, 'classe_do_numero')]"
+        # numeros_sorteados_elementos = self.driver.find_elements(By.XPATH, xpath_numeros_sorteados)
+
+        # # Converte os numeros sorteados para inteiros
+        # numeros_sorteados = [int(elemento.text) for elemento in numeros_sorteados_elementos]
+
+            # return numeros_sorteados
+        except Exception as e:
+            print(f"Erro {e}")
+
+def gerar_palpites(numeros_sorteados):
+    # Gera palpites com base nos numeros sorteados
+    return list(numeros_sorteados)
+mensagem = f'Olá, teste mega-sena python'
+
+# Manipulador para encaminhar mensagens para um grupo
+@bot.message_handler(func=lambda message: True)
+def encaminhar_mensagem(message):
+    # Substitua 'ID_DO_GRUPO' pelo ID real do seu grupo
+    bot.polling()
+    grupo_id = -100123456789  # Exemplo fictício, substitua pelo ID do seu grupo
+    mensagem = message.text
+    bot.send_message(grupo_id, f'Mensagem encaminhada: {mensagem}')
     
-    try:
-        retorno_nav = 'Google Chrome'
-        if retorno_nav == "ERRO":
-            ...
-        elif retorno_nav == "Google Chrome":
-            options = webdriver.ChromeOptions()  # Definindo opcoes para o webdriver para o chrome
-            # options.add_argument('--headless=new')  # Definindo opcoes para rodar a automação web em segundo plano.
-            prefs = {"download.default_directory": f"{vgb.dir_gdis}"}  # Definindo o diretorio do Download de arquivos
-            options.add_experimental_option("excludeSwitches", ["enable-logging"])  # Desabilitando a captura padrao de bluetooth do navegador
-            options.add_experimental_option("prefs", prefs)  # Adicionando as preferencias para Download de arquivos
-            service = ChromeService(log_path=f'{vgb.drivers_dir}{vgb.barra}chromedriver.log')  # executable_path=ChromeDriverManager(path=vgb.drivers_dir).install())  # Construindo o servico, download e instalacao do driver automaticamente
-            if sys.platform.startswith('win32'):
-                service.creation_flags = CREATE_NO_WINDOW  # CREATE_NO_WINDOW desativa a abertura do terminal para download do driver
-            self.driver = webdriver.Chrome(options=options, service=service)  # Passando o webdriver para a classe servico e inicializando e realizando o download automatico chrome
-            self.inicio_acessa_minhanexx()  # Chamando funcao
-    except Exception as erro:
-        print('Erro ao inicializar o navegador.')
 
-def inicio_acessa_megasena(self):
-    self.driver.maximize_window()  # Definindo para abrir no formato maximizado
-    self.driver.get(site1)
-    time.sleep(10)
-    sys.exit()
+# Modulo principal
+if __name__ == "__main__":
+    # Inicializar o navegador
+    navegador = Navegador()
+    navegador.inicializar()
 
+    # Buscar os numeros sorteados
+    numeros_sorteados = navegador.buscar_numeros_sorteados()
 
+    # Gerar palpites
+    # palpites = gerar_palpites(numeros_sorteados)
 
-
-
-
-
-
-
-
-# Criar funcao para realizar a busca pelos numeros sorteados.
-
-# Criar funcao para encaminhar palpites de jogos com base nos numeros que mais se repetiram
-
-# Criar funcao para encaminhar por whatsapp
+    # Encaminhar palpites por telegran
+    encaminhar_mensagem(numeros_sorteados)
+    
+    # encaminhar_palpites_por_whatsapp(palpites, contato)
