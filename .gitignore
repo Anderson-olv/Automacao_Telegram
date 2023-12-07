@@ -1,3 +1,5 @@
 venv/
+.vscode
 dados.py
 __pycache__
+chromedriver.log

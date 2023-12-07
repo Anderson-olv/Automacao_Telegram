@@ -1,6 +1,6 @@
 import telebot
 import time
-import dados
+# import dados
 import webbrowser
 from urllib.parse import quote
 from selenium import webdriver
@@ -11,7 +11,7 @@ from selenium.webdriver.support import expected_conditions as EC
 
 # Constantes
 site_url = "https://loterias.caixa.gov.br/Paginas/Mega-Sena.aspx"
-bot = telebot.TeleBot(dados.chave_api)
+# bot = telebot.TeleBot(dados.chave_api)
 
 # Funcoes
 class Navegador:
@@ -38,6 +38,8 @@ class Navegador:
             time.sleep(1)
             self.driver.find_element(By.XPATH, "//h2[1]//span[1]").location_once_scrolled_into_view
             time.sleep(1)
+            WebDriverWait(self.driver, 60).until(EC.visibility_of_element_located((By.XPATH, "(//div[@class='resultado-loteria'])[1]")))
+            time.sleep(1)
             resultado = self.driver.find_element(By.XPATH, "(//div[@class='resultado-loteria'])[1]").text
             print('')
             print(resultado)
@@ -45,7 +47,7 @@ class Navegador:
             premiacao = self.driver.find_element(By.XPATH, "(//div[@class='related-box gray-text no-margin'])[1]").text
             print(premiacao)
             print('')
-            time.sleep(10)
+            # time.sleep(2)
             return resultado
         
         # Modifique o XPath abaixo para corresponder ao local onde os números sorteados estão na página
@@ -65,13 +67,13 @@ def gerar_palpites(numeros_sorteados):
 mensagem = f'Olá, teste mega-sena python'
 
 # Manipulador para encaminhar mensagens para um grupo
-@bot.message_handler(func=lambda message: True)
-def encaminhar_mensagem(message):
-    # Substitua 'ID_DO_GRUPO' pelo ID real do seu grupo
-    bot.polling()
-    grupo_id = -100123456789  # Exemplo fictício, substitua pelo ID do seu grupo
-    mensagem = message.text
-    bot.send_message(grupo_id, f'Mensagem encaminhada: {mensagem}')
+# @bot.message_handler(func=lambda message: True)
+# def encaminhar_mensagem(message):
+#     # Substitua 'ID_DO_GRUPO' pelo ID real do seu grupo
+#     bot.polling()
+#     grupo_id = -100123456789  # Exemplo fictício, substitua pelo ID do seu grupo
+#     mensagem = message.text
+#     bot.send_message(grupo_id, f'Mensagem encaminhada: {mensagem}')
     
 
 # Modulo principal
@@ -86,7 +88,7 @@ if __name__ == "__main__":
     # Gerar palpites
     # palpites = gerar_palpites(numeros_sorteados)
 
-    # Encaminhar palpites por telegran
-    encaminhar_mensagem(numeros_sorteados)
+    # Encaminhar palpites por telegram
+    # encaminhar_mensagem(numeros_sorteados)
     
     # encaminhar_palpites_por_whatsapp(palpites, contato)
